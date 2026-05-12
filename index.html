@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Architecture of Scale · Bulletin #01</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500&family=Instrument+Serif&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --paper:      #FCFBF6;
+    --ink:        #2A2722;
+    --ink-soft:   #6B6660;
+    --rule:       #C8C2B7;
+    --blue:       #2540C8;
+    --orange:     #E54B2B;
+    --grounded:   #1F7A4E;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .page {
+    max-width: 800px;
+    width: 100%;
+    padding: 48px 32px;
+  }
+
+  .bulletin {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: 56px;
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+    margin: 0 0 16px 0;
+  }
+
+  h1 .accent {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    text-transform: lowercase;
+    letter-spacing: -0.005em;
+  }
+
+  .lede {
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--ink);
+    max-width: 620px;
+    margin: 0 0 36px 0;
+  }
+
+  .lede em { font-style: italic; color: var(--ink-soft); }
+
+  .lang-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin: 32px 0 24px 0;
+  }
+
+  .lang-card {
+    display: block;
+    padding: 22px 24px;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    text-decoration: none;
+    transition: background 0.15s, transform 0.15s;
+  }
+
+  .lang-card:hover {
+    background: var(--ink);
+    color: var(--paper);
+    transform: translateY(-1px);
+  }
+
+  .lang-card:hover .lang-meta { color: rgba(252, 251, 246, 0.6); }
+  .lang-card:hover .arrow { color: var(--orange); }
+
+  .lang-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .lang-card:hover .lang-label { color: rgba(252, 251, 246, 0.6); }
+
+  .lang-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+
+  .lang-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+
+  .arrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 22px;
+    color: var(--orange);
+    transition: color 0.15s;
+    float: right;
+    margin-top: -28px;
+  }
+
+  hr.rule {
+    border: 0;
+    border-top: 1px solid var(--rule);
+    margin: 32px 0;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 36px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+
+  .meta-grid h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin: 0 0 6px 0;
+    font-weight: 600;
+  }
+
+  .meta-grid ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .meta-grid li::before {
+    content: "·  ";
+    color: var(--ink-soft);
+  }
+
+  footer.colophon {
+    margin-top: 48px;
+    padding-top: 18px;
+    border-top: 2px solid var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  footer.colophon a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
+  footer.colophon a:hover { border-bottom-color: var(--ink); }
+
+  @media (max-width: 640px) {
+    h1 { font-size: 38px; }
+    .lang-row, .meta-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="bulletin">Bulletin #01 · Context Architectures · A Comparison</div>
+
+  <h1>
+    Architecture<br/>
+    <span class="accent">of</span> Scale.
+  </h1>
+
+  <p class="lede">
+    A brutalist visualisation comparing four ways to ground an LLM in real knowledge —
+    <em>Context Window</em>, <em>RAG</em>, <em>Knowledge Graph</em>, and <em>LLM Wiki</em> —
+    each running the same three sample queries. Watch where each one succeeds, partially answers,
+    or breaks down completely.
+  </p>
+
+  <div class="lang-row">
+    <a class="lang-card" href="architecture-of-scale-en.html">
+      <div class="lang-label">EN · English</div>
+      <div class="lang-title">Four ways to answer one question.</div>
+      <div class="arrow">→</div>
+      <div class="lang-meta">Open the English version</div>
+    </a>
+    <a class="lang-card" href="architecture-of-scale-nl.html">
+      <div class="lang-label">NL · Nederlands</div>
+      <div class="lang-title">Vier manieren om één vraag te beantwoorden.</div>
+      <div class="arrow">→</div>
+      <div class="lang-meta">Open de Nederlandse versie</div>
+    </a>
+  </div>
+
+  <hr class="rule" />
+
+  <div class="meta-grid">
+    <div>
+      <h3>What's inside</h3>
+      <ul>
+        <li>Three sample queries — common knowledge, proprietary &amp; recent, multi-hop relational</li>
+        <li>Four architectures × four animations × three outcomes (Grounded / Partial / Ungrounded)</li>
+        <li>An investment axis from <em>zero prep</em> to <em>continuous prep</em></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Stack</h3>
+      <ul>
+        <li>Pure HTML &middot; no build step</li>
+        <li>React 18 + motion.dev 11 (esm.sh CDN)</li>
+        <li>Inter + JetBrains Mono + Instrument Serif (Google Fonts)</li>
+        <li>Best viewed on viewports ≥ 1280 px</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer class="colophon">
+    <span>Open source &middot; <a href="https://github.com/">view repo on GitHub</a></span>
+    <span>2026</span>
+  </footer>
+</div>
+</body>
+</html>
