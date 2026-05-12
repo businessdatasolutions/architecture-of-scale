@@ -10,11 +10,11 @@ Each architecture is shown processing the same three sample queries (common know
 - **English** &mdash; [`architecture-of-scale-en.html`](architecture-of-scale-en.html)
 - **Nederlands** &mdash; [`architecture-of-scale-nl.html`](architecture-of-scale-nl.html)
 
-After GitHub Pages is enabled on this repo, the URLs will be:
+Hosted on GitHub Pages:
 
-- `https://<owner>.github.io/architecture-of-scale/`
-- `https://<owner>.github.io/architecture-of-scale/architecture-of-scale-en.html`
-- `https://<owner>.github.io/architecture-of-scale/architecture-of-scale-nl.html`
+- <https://businessdatasolutions.github.io/architecture-of-scale/> &mdash; landing page
+- <https://businessdatasolutions.github.io/architecture-of-scale/architecture-of-scale-en.html>
+- <https://businessdatasolutions.github.io/architecture-of-scale/architecture-of-scale-nl.html>
 
 ## What's in each visualisation
 
