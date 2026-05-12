@@ -21,15 +21,17 @@
   }
 
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; }
+  html, body { margin: 0; }
+  html { min-height: 100%; }
   body {
+    min-height: 100vh;
     background: var(--paper);
     color: var(--ink);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
   }
 
