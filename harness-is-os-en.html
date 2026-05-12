@@ -132,7 +132,15 @@
     text-transform: uppercase;
     color: rgba(255,255,255,0.58);
   }
-  .manifesto-controls { display: flex; gap: 6px; padding-top: 4px; }
+  .manifesto-controls { display: flex; gap: 6px; padding-top: 4px; flex-wrap: wrap; }
+  .manifesto-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    padding-top: 2px;
+  }
   .nav-btn {
     background: transparent;
     border: 1px solid rgba(255,255,255,0.35);
@@ -1268,6 +1276,24 @@ const App = () => {
     setReplayKey(k => k + 1)
   }
 
+  // Manual stepping pauses the auto-cycle so the user can dwell on a step.
+  const stepBy = (delta) => {
+    setPaused(true)
+    setFocusedId(null)
+    setStepIdx(i => (i + delta + TRACE_SEQ.length) % TRACE_SEQ.length)
+  }
+
+  // Keyboard navigation — arrow keys step through TRACE_SEQ.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "ArrowRight") { e.preventDefault(); stepBy(1) }
+      else if (e.key === "ArrowLeft")  { e.preventDefault(); stepBy(-1) }
+      else if (e.key === " ")          { e.preventDefault(); setPaused(p => !p) }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
+
   // Compact step indicator: shows the worked-example progress, not the abstract trace state.
   const stepDescription = useMemo(() => {
     if (focusedId) {
@@ -1295,11 +1321,14 @@ const App = () => {
           </div>
           <div className="manifesto-source">§ The operating-system analogy</div>
           <div className="manifesto-controls">
-            <button className="nav-btn" onClick=${() => setPaused(p => !p)}>
+            <button className="nav-btn" onClick=${() => stepBy(-1)} title="Previous step (←)">◀ Prev</button>
+            <button className="nav-btn" onClick=${() => stepBy(1)}  title="Next step (→)">Next ▶</button>
+            <button className="nav-btn" onClick=${() => setPaused(p => !p)} title="Toggle auto-cycle (space)">
               ${paused ? "▶ Play" : "❚❚ Pause"}
             </button>
-            <button className="nav-btn replay" onClick=${handleReplay}>⟳ Replay</button>
+            <button className="nav-btn replay" onClick=${handleReplay} title="Restart at step 1">⟳ Replay</button>
           </div>
+          <div className="manifesto-hint">Use ← → to step through · space to pause/resume</div>
         </div>
       </header>
 

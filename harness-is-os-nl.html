@@ -132,7 +132,15 @@
     text-transform: uppercase;
     color: rgba(255,255,255,0.58);
   }
-  .manifesto-controls { display: flex; gap: 6px; padding-top: 4px; }
+  .manifesto-controls { display: flex; gap: 6px; padding-top: 4px; flex-wrap: wrap; }
+  .manifesto-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    padding-top: 2px;
+  }
   .nav-btn {
     background: transparent;
     border: 1px solid rgba(255,255,255,0.35);
@@ -1268,6 +1276,24 @@ const App = () => {
     setReplayKey(k => k + 1)
   }
 
+  // Handmatig stappen pauzeert de auto-cyclus zodat de kijker bij een stap kan stilstaan.
+  const stepBy = (delta) => {
+    setPaused(true)
+    setFocusedId(null)
+    setStepIdx(i => (i + delta + TRACE_SEQ.length) % TRACE_SEQ.length)
+  }
+
+  // Toetsenbord-navigatie — pijltjes stappen door TRACE_SEQ heen.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "ArrowRight") { e.preventDefault(); stepBy(1) }
+      else if (e.key === "ArrowLeft")  { e.preventDefault(); stepBy(-1) }
+      else if (e.key === " ")          { e.preventDefault(); setPaused(p => !p) }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
+
   // Compacte stap-indicator: toont de worked-example voortgang, niet de abstracte trace-state.
   const stepDescription = useMemo(() => {
     if (focusedId) {
@@ -1295,11 +1321,14 @@ const App = () => {
           </div>
           <div className="manifesto-source">§ De besturingssysteem-analogie</div>
           <div className="manifesto-controls">
-            <button className="nav-btn" onClick=${() => setPaused(p => !p)}>
+            <button className="nav-btn" onClick=${() => stepBy(-1)} title="Vorige stap (←)">◀ Vorige</button>
+            <button className="nav-btn" onClick=${() => stepBy(1)}  title="Volgende stap (→)">Volgende ▶</button>
+            <button className="nav-btn" onClick=${() => setPaused(p => !p)} title="Auto-cyclus aan/uit (spatie)">
               ${paused ? "▶ Speel" : "❚❚ Pauze"}
             </button>
-            <button className="nav-btn replay" onClick=${handleReplay}>⟳ Opnieuw</button>
+            <button className="nav-btn replay" onClick=${handleReplay} title="Begin opnieuw">⟳ Opnieuw</button>
           </div>
+          <div className="manifesto-hint">Gebruik ← → om door de stappen te lopen · spatie om te pauzeren</div>
         </div>
       </header>
 
