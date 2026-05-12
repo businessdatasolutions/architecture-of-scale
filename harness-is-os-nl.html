@@ -132,6 +132,18 @@
     text-transform: uppercase;
     color: rgba(255,255,255,0.58);
   }
+  .manifesto-label a,
+  .manifesto-source a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(255,255,255,0.4);
+    transition: color 0.15s, border-bottom-color 0.15s;
+  }
+  .manifesto-label a:hover,
+  .manifesto-source a:hover {
+    color: white;
+    border-bottom-color: white;
+  }
   .manifesto-controls { display: flex; gap: 6px; padding-top: 4px; flex-wrap: wrap; }
   .manifesto-hint {
     font-family: 'JetBrains Mono', monospace;
@@ -428,6 +440,16 @@
     color: var(--ink-faint);
     margin-top: 2px;
   }
+  .takeaway-cite a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dotted var(--rule);
+    transition: color 0.15s, border-bottom-color 0.15s;
+  }
+  .takeaway-cite a:hover {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
 
   /* Footer axis */
   footer.axis {
@@ -509,6 +531,13 @@ import { motion, AnimatePresence } from "motion/react"
 import htm from "htm"
 
 const html = htm.bind(React.createElement)
+
+/* Externe verwijzingen — elke wiki-citatie linkt terug naar de bronpagina op
+   de gepubliceerde Quartz-site. Sectie-anchors zijn best-effort: Quartz
+   slugifieert kopjes, dus bij twijfel linken we naar de paginaroot en laat
+   de citaat-tekst de sectie omschrijven. */
+const WIKI_BASE    = "https://businessdatasolutions.github.io/ai-wiki"
+const WIKI_HARNESS = `${WIKI_BASE}/concepts/agent-harness`
 
 /* ====================================================================
    COMPONENT MAPPING — the spine of the visualization
@@ -1174,24 +1203,28 @@ const TAKEAWAYS = [
     head: "Mapping",
     text: html`<strong>Eén-op-één, geen metafoor.</strong> Geheugenbeheer, planning, IO, isolatie, exception-afhandeling — dezelfde vijf problemen, opgelost op dezelfde plek.`,
     cite: "agent-harness.md · §OS-analogie",
+    url:  WIKI_HARNESS,
   },
   {
     marker: "blue",
     head: "Inversie",
     text: html`<strong>Het model is de CPU, niet het systeem.</strong> Een CPU doet niets zonder OS. Een LLM doet niets in productie zonder harness.`,
     cite: "agent-harness.md · §OS-analogie",
+    url:  WIKI_HARNESS,
   },
   {
     marker: "orange",
     head: "Economie",
     text: html`<strong>De CPU is gehuurd; het OS is van jou.</strong> Plan voor wisselen, niet voor trouwen — en doe het opbouwende werk op de laag waar het substraat niet veroudert.`,
     cite: "agent-harness.md · §Model is gehuurd",
+    url:  WIKI_HARNESS,
   },
   {
     marker: "grounded",
     head: "Trajectorie",
     text: html`<strong>Benchmark-plafonds zijn geen plafond.</strong> Modelresultaten plateauen; productie-agents blijven verbeteren — omdat het OS-werk het zware tilwerk doet.`,
     cite: "agent-harness.md · §Empirische verankering",
+    url:  WIKI_HARNESS,
   },
 ]
 
@@ -1208,7 +1241,11 @@ const Takeaways = ({ replayKey }) => html`
         <div className=${`takeaway-marker ${t.marker}`}></div>
         <div className="takeaway-head">${t.head}</div>
         <div className="takeaway-text">${t.text}</div>
-        <div className="takeaway-cite">${t.cite}</div>
+        <div className="takeaway-cite">
+          ${t.url
+            ? html`<a href=${t.url} target="_blank" rel="noopener">${t.cite}</a>`
+            : t.cite}
+        </div>
       </${motion.div}>
     `)}
   </div>
@@ -1315,11 +1352,11 @@ const App = () => {
           </h1>
         </div>
         <div className="manifesto">
-          <div className="manifesto-label">Uit de wiki · agent-harness.md</div>
+          <div className="manifesto-label">Uit de wiki · <a href=${WIKI_HARNESS} target="_blank" rel="noopener">agent-harness.md</a></div>
           <div className="manifesto-text">
             <span className="quote-mark">„</span>De ruwe LLM is de <strong>CPU</strong> — krachtig maar inert. Geen geheugen, geen opslag, geen IO. Je context window gedraagt zich als <strong>RAM</strong> — snel maar beperkt. Externe databases dienen als <strong>schijf</strong>. Tool-integraties zijn <strong>apparaatdrivers</strong>. En de <strong>harness</strong> is het <strong>besturingssysteem</strong>, dat bepaalt wat de CPU ziet en wanneer.<span className="quote-mark">”</span>
           </div>
-          <div className="manifesto-source">§ De besturingssysteem-analogie</div>
+          <div className="manifesto-source"><a href=${WIKI_HARNESS} target="_blank" rel="noopener">§ De besturingssysteem-analogie</a></div>
           <div className="manifesto-controls">
             <button className="nav-btn" onClick=${() => stepBy(-1)} title="Vorige stap (←)">◀ Vorige</button>
             <button className="nav-btn" onClick=${() => stepBy(1)}  title="Volgende stap (→)">Volgende ▶</button>
