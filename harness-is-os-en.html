@@ -662,7 +662,7 @@ const EXAMPLE_STEPS = [
     agentic:   { badge: "PLAN",      cls: "sched", code: "harness.plan(): tools=[query_db]" } },
   // 3: os -> cpu — dispatch
   { classical: { badge: "DISPATCH",  cls: "sched", code: "ctx_switch; load IP=0x4000" },
-    agentic:   { badge: "DISPATCH",  cls: "sched", code: "claude.invoke(tools=[query_db])" } },
+    agentic:   { badge: "DISPATCH",  cls: "sched", code: "llm.invoke(tools=[query_db])" } },
   // 4: cpu — execute / emit
   { classical: { badge: "DECODE",    cls: "cpu",   code: "DIV  r1, r3, r2" },
     agentic:   { badge: "EMIT",      cls: "cpu",   code: 'tool_use {name:"query_db",' } },
@@ -692,7 +692,7 @@ const EXAMPLE_STEPS = [
     agentic:   { badge: "APPEND",    cls: "sched", code: "ctx.append(tool_result)" } },
   // 13: app — present
   { classical: { badge: "OUTPUT",    cls: "cpu",   code: 'printf("ROE=%.3f", r1) → 0.184' },
-    agentic:   { badge: "ANSWER",    cls: "cpu",   code: 'claude: "ROE = 18.4%"' } },
+    agentic:   { badge: "ANSWER",    cls: "cpu",   code: 'llm: "ROE = 18.4%"' } },
 ]
 
 /* ====================================================================
