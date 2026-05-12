@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dezelfde problemen, dezelfde architectuur · De harness is het OS</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500&family=Instrument+Serif&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --paper:        #FCFBF6;
+    --paper-soft:   #F4F0E4;
+    --paper-deep:   #ECE6D5;
+    --ink:          #2A2722;
+    --ink-soft:     #6B6660;
+    --ink-faint:    #A8A296;
+    --rule:         #C8C2B7;
+    --rule-soft:    #E2DDD0;
+    --blue:         #2540C8;
+    --blue-soft:    #E8EBFA;
+    --blue-deep:    #1A2E96;
+    --orange:       #E54B2B;
+    --orange-soft:  #FBDED4;
+    --grounded:     #1F7A4E;
+    --partial:      #C97A1F;
+    --ungrounded:   #B22A2A;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow: auto;
+  }
+  .mono  { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; }
+  .serif { font-family: 'Instrument Serif', Georgia, serif; }
+
+  .page {
+    min-width: 1280px;
+    max-width: 1720px;
+    margin: 0 auto;
+    padding: 32px 44px 28px;
+    display: grid;
+    grid-template-rows: auto auto 1fr auto auto;
+    gap: 24px;
+    min-height: 100vh;
+  }
+
+  header.main {
+    display: grid;
+    grid-template-columns: 1fr 520px;
+    gap: 40px;
+    align-items: end;
+  }
+  .bulletin {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .byline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .byline a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    transition: color 0.15s;
+  }
+  .byline a:hover { color: var(--ink); }
+  h1.title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: 60px;
+    line-height: 0.92;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+    margin: 0;
+    color: var(--ink);
+  }
+
+  .manifesto {
+    background: var(--blue);
+    color: white;
+    padding: 18px 22px 14px;
+    display: grid;
+    gap: 12px;
+  }
+  .manifesto-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: rgba(255,255,255,0.62);
+    text-transform: uppercase;
+  }
+  .manifesto-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.42;
+    color: white;
+  }
+  .manifesto-text .quote-mark {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    font-style: italic;
+    opacity: 0.7;
+    line-height: 0;
+    position: relative;
+    top: 2px;
+  }
+  .manifesto-source {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.58);
+  }
+  .manifesto-controls { display: flex; gap: 6px; padding-top: 4px; }
+  .nav-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.35);
+    color: white;
+    padding: 6px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.15s, transform 0.15s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.16); }
+  .nav-btn:active { transform: translateY(1px); }
+  .nav-btn.replay { background: white; color: var(--blue); border-color: white; font-weight: 600; }
+  .nav-btn.replay:hover { background: rgba(255,255,255,0.86); }
+
+  .legend-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 100px;
+    align-items: end;
+    padding-bottom: 4px;
+  }
+  .legend-side {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .legend-side.right { text-align: right; align-items: flex-end; }
+  .legend-num {
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: 44px;
+    line-height: 1;
+    color: var(--orange);
+    letter-spacing: -0.04em;
+  }
+  .legend-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.015em;
+    text-transform: uppercase;
+  }
+  .legend-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .legend-rule { height: 2px; background: var(--ink); margin-top: 6px; }
+
+  .stage {
+    position: relative;
+    width: 100%;
+  }
+  .stage svg.boards {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 620px;
+  }
+
+  /* Component visuals */
+  .comp-body { transition: fill 0.25s ease; }
+  .comp-shadow { fill: var(--ink-faint); opacity: 0.35; }
+  .comp-side   { fill: var(--ink-soft); }
+  .comp-top    { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2; }
+  .comp-top.active { fill: var(--blue-soft); stroke: var(--blue); stroke-width: 1.5; }
+  .comp-top.focused { fill: var(--blue); stroke: var(--blue-deep); stroke-width: 1.8; }
+  .pcb-fill    { fill: var(--paper-soft); stroke: var(--ink); stroke-width: 1.5; }
+  .pcb-pin     { fill: var(--ink-soft); }
+  .pcb-rail    { stroke: var(--ink-faint); stroke-width: 1; fill: none; stroke-dasharray: 3 2; }
+  .pcb-rail-hot{ stroke: var(--blue); stroke-width: 2; fill: none; filter: url(#hot-glow); }
+  .text-name   { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; fill: var(--ink); }
+  .text-sub    { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.05em; fill: var(--ink-soft); text-transform: lowercase; }
+  .text-name.on-blue { fill: white; }
+  .text-sub.on-blue  { fill: rgba(255,255,255,0.78); }
+  .pin-grid line { stroke: var(--ink-soft); stroke-width: 0.8; }
+  .heat-spreader { fill: var(--paper-deep); stroke: var(--ink); stroke-width: 1.2; }
+  .heat-spreader.active { fill: white; stroke: var(--blue); }
+  .dimm-slot  { fill: var(--paper-deep); stroke: var(--ink); stroke-width: 1.2; }
+  .dimm-token { fill: var(--ink-soft); }
+  .dimm-token.lit { fill: var(--blue); }
+  .pcie-slot  { fill: var(--ink); }
+  .pcie-slot.active { fill: var(--blue); }
+  .sata-port  { fill: var(--paper); stroke: var(--ink); stroke-width: 1; }
+  .sata-port.active { fill: var(--blue-soft); stroke: var(--blue); }
+  .cap-body   { fill: var(--paper-deep); stroke: var(--ink-soft); stroke-width: 0.8; }
+  .cap-band   { stroke: var(--ink); stroke-width: 0.6; fill: none; }
+  .mount-hole { fill: var(--paper); stroke: var(--ink); stroke-width: 1; }
+  .board-label-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    fill: var(--ink-soft);
+  }
+
+  /* Gutter mapping arrows */
+  .gutter-arrow { stroke: var(--ink-faint); stroke-width: 1.2; fill: none; stroke-dasharray: 4 3; }
+  .gutter-arrow.active { stroke: var(--blue); stroke-width: 2; stroke-dasharray: 0; filter: url(#hot-glow); }
+  .gutter-arrow-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    fill: var(--ink-soft);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .gutter-arrow-label.active { opacity: 1; fill: var(--blue-deep); font-weight: 600; }
+
+  .step-label {
+    text-align: center;
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    min-height: 16px;
+  }
+  .step-label .step-word { color: var(--blue); font-weight: 600; }
+
+  /* Detail panel */
+  .detail-panel {
+    background: var(--paper-soft);
+    border: 1px solid var(--rule);
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 200px 1fr 1fr;
+    gap: 22px;
+    align-items: start;
+    min-height: 122px;
+  }
+  .detail-panel.empty { color: var(--ink-faint); }
+  .detail-head {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .detail-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-top: 4px;
+  }
+  .detail-quote {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 14px;
+    font-style: italic;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    margin-top: 6px;
+  }
+  .detail-col h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .detail-col ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 4px;
+  }
+  .detail-col li {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+  .detail-col li::before {
+    content: '— ';
+    color: var(--ink-faint);
+  }
+
+  /* Takeaways */
+  .takeaways {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+  }
+  .takeaway-cell { display: flex; flex-direction: column; gap: 6px; }
+  .takeaway-head {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .takeaway-marker { width: 18px; height: 3px; background: var(--ink); }
+  .takeaway-marker.blue { background: var(--blue); }
+  .takeaway-marker.orange { background: var(--orange); }
+  .takeaway-marker.grounded { background: var(--grounded); }
+  .takeaway-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--ink);
+  }
+  .takeaway-text strong { font-weight: 700; }
+  .takeaway-cite {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    margin-top: 2px;
+  }
+
+  /* Footer axis */
+  footer.axis {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 28px;
+    padding-top: 16px;
+    border-top: 2px solid var(--ink);
+  }
+  .axis-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .axis-label.right { text-align: right; }
+  .axis-dots { display: flex; gap: 28px; align-items: center; }
+  .axis-dot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .axis-dot-mark { width: 9px; height: 9px; background: var(--ink-faint); }
+  .axis-dot-mark.now { background: var(--blue); }
+  .axis-dot-mark.then { background: var(--ink); }
+  .axis-dot-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5px;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  @media (max-width: 1280px) { body { overflow-x: auto; } }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+    "motion/react": "https://esm.sh/motion@11.15.0/react?deps=react@18.3.1,react-dom@18.3.1",
+    "htm": "https://esm.sh/htm@3.1.1"
+  }
+}
+</script>
+</head>
+<body>
+<div id="root"></div>
+<div id="err" style="display:none;position:fixed;top:0;left:0;right:0;padding:16px;background:#7f1d1d;color:#fee2e2;font-family:ui-monospace,monospace;font-size:12px;white-space:pre-wrap;z-index:9999;max-height:50vh;overflow:auto"></div>
+<script>
+  function showErr(msg) {
+    var el = document.getElementById("err");
+    if (!el) return;
+    el.style.display = "block";
+    el.textContent = (el.textContent ? el.textContent + "\n\n" : "") + msg;
+  }
+  window.addEventListener("error", function (e) {
+    showErr("Error: " + (e.error && e.error.stack ? e.error.stack : e.message));
+  });
+  window.addEventListener("unhandledrejection", function (e) {
+    showErr("Unhandled rejection: " + (e.reason && e.reason.stack ? e.reason.stack : e.reason));
+  });
+</script>
+
+<script type="module">
+import React, { useState, useEffect, useRef, useMemo } from "react"
+import { createRoot } from "react-dom/client"
+import { motion, AnimatePresence } from "motion/react"
+import htm from "htm"
+
+const html = htm.bind(React.createElement)
+
+/* ====================================================================
+   COMPONENT MAPPING — the spine of the visualization
+   ==================================================================== */
+
+const COMPONENTS = [
+  {
+    id: "app",
+    kind: "chip-small",
+    pos: { x: 470, y: 50, w: 200, h: 56 },
+    classic: { name: "Applicatie", sub: "het .exe" },
+    agentic: { name: "Prompt",     sub: "Software 3.0" },
+    detail: {
+      title: "Applicatie ↔ Software 3.0-programma",
+      quote: '"Het programma dat geladen wordt voor uitvoering. Dezelfde rol: bepaalt wat het systeem doet."',
+      classic: ["main(int argc, char**)", "Gelinkte binaries + shared libs", "User-space proces"],
+      agentic: ["Systeem- + gebruikersprompt", "Skills + geheugen geïnjecteerd", "Agentic-loop instantie"],
+    },
+  },
+  {
+    id: "os",
+    kind: "chip-wide",
+    pos: { x: 130, y: 130, w: 540, h: 70 },
+    classic: { name: "Besturingssysteem", sub: "planner · IO · GC" },
+    agentic: { name: "Agent Harness",     sub: "context · tools · retry" },
+    detail: {
+      title: "Besturingssysteem ↔ Agent harness",
+      quote: '"Een OS doet geheugenbeheer, planning, IO-bemiddeling, procesisolatie en exception-afhandeling. Een agent harness doet contextbeheer, agentic-loop-besturing, tooluitvoering, sandboxing/permissies en retry/fout-afhandeling."',
+      classic: ["Geheugenbeheer", "Planning", "IO-bemiddeling", "Procesisolatie", "Exception-afhandeling"],
+      agentic: ["Contextbeheer", "Agentic-loop-besturing", "Tooluitvoering", "Sandboxing / permissies", "Retry / fout-afhandeling"],
+    },
+  },
+  {
+    id: "cpu",
+    kind: "cpu-socket",
+    pos: { x: 290, y: 240, w: 220, h: 140 },
+    classic: { name: "CPU",  sub: "krachtig, inert" },
+    agentic: { name: "LLM",  sub: "krachtig, inert" },
+    detail: {
+      title: "CPU ↔ LLM",
+      quote: '"De ruwe LLM is de CPU — krachtig maar inert. Geen geheugen, geen opslag, geen IO."',
+      classic: ["Instructie-uitvoering", "Registerbestand", "Klok-gesynchroniseerd, deterministisch"],
+      agentic: ["Tokenvoorspelling", "Verborgen state per aanroep", "Stochastisch, herhaalbaar via seed"],
+    },
+  },
+  {
+    id: "ram",
+    kind: "dimm-pair",
+    pos: { x: 70, y: 240, w: 180, h: 140 },
+    classic: { name: "RAM",            sub: "snel, beperkt" },
+    agentic: { name: "Context Window", sub: "snel, beperkt" },
+    detail: {
+      title: "RAM ↔ Context window",
+      quote: '"Je context window gedraagt zich als RAM — snel maar beperkt."',
+      classic: ["Vluchtig werkgeheugen", "Eviction-policies", "Cachehiërarchie"],
+      agentic: ["Vluchtige tokenbuffer", "Compactie / samenvatting", "KV-cachehiërarchie"],
+    },
+  },
+  {
+    id: "drivers",
+    kind: "pcie-stack",
+    pos: { x: 540, y: 240, w: 150, h: 130 },
+    classic: { name: "Apparaatdrivers",   sub: "kernel-modules" },
+    agentic: { name: "Tool-integraties",  sub: "MCP / function calls" },
+    detail: {
+      title: "Apparaatdrivers ↔ Tool-integraties",
+      quote: '"Tool-integraties zijn apparaatdrivers."',
+      classic: ["Standaard syscall-oppervlak", "Per-apparaat protocol-drivers", "Kernel-bemiddelde IO"],
+      agentic: ["Standaard JSON-tool-oppervlak", "Per-API tool-wrappers", "Harness-bemiddelde IO"],
+    },
+  },
+  {
+    id: "disk",
+    kind: "sata-row",
+    pos: { x: 70, y: 420, w: 240, h: 50 },
+    classic: { name: "Schijf",            sub: "persistent" },
+    agentic: { name: "Externe Database",  sub: "persistent" },
+    detail: {
+      title: "Schijf ↔ Externe database",
+      quote: '"Externe databases dienen als schijf."',
+      classic: ["Blokopslag, bestandssysteem", "Random access, hoge latentie", "Behouden over reboots"],
+      agentic: ["Vector / SQL / object-store", "Netwerktoegang, RAG-latentie", "Behouden over sessies"],
+    },
+  },
+]
+
+const DECOR = [
+  { kind: "atx-pwr",    pos: { x: 50,  y: 50,  w: 70,  h: 80 } },
+  { kind: "caps",       pos: { x: 350, y: 420, w: 200, h: 50 } },
+  { kind: "mount",      pos: { x: 25,  y: 25,  w: 12,  h: 12 } },
+  { kind: "mount",      pos: { x: 705, y: 25,  w: 12,  h: 12 } },
+  { kind: "mount",      pos: { x: 25,  y: 505, w: 12,  h: 12 } },
+  { kind: "mount",      pos: { x: 705, y: 505, w: 12,  h: 12 } },
+]
+
+/* ====================================================================
+   TRACES — paths between components on each board.
+   Each trace is a hand-laid SVG path between component edges.
+   ==================================================================== */
+
+const TRACES = [
+  // app -> os (vertical from app down to scheduler)
+  { id: "app-os",     d: "M 570 106 L 570 120 L 400 120 L 400 130" },
+  // os -> cpu (down from scheduler centre)
+  { id: "os-cpu",     d: "M 400 200 L 400 240" },
+  // os -> drivers (east from scheduler to PCIe)
+  { id: "os-drivers", d: "M 605 200 L 605 220 L 615 220 L 615 240" },
+  // cpu -> ram (west from cpu to dimm bank)
+  { id: "cpu-ram",    d: "M 290 310 L 270 310 L 270 300 L 250 300" },
+  // drivers -> disk (south then west, terminates at SATA-4 port for visible connection)
+  { id: "drivers-disk", d: "M 540 370 L 530 370 L 530 400 L 185 400 L 185 420" },
+]
+
+const TRACE_SEQ = [
+  // forward path
+  { active: "app",     trace: null },
+  { active: "app+os",  trace: "app-os" },
+  { active: "os",      trace: null },
+  { active: "os+cpu",  trace: "os-cpu" },
+  { active: "cpu",     trace: null },
+  { active: "cpu+ram", trace: "cpu-ram" },
+  { active: "ram",     trace: null },
+  // fan to IO
+  { active: "os+drivers",      trace: "os-drivers" },
+  { active: "drivers",         trace: null },
+  { active: "drivers+disk",    trace: "drivers-disk" },
+  { active: "disk",            trace: null },
+  // return wave
+  { active: "drivers",         trace: null },
+  { active: "os",              trace: null },
+  { active: "app",             trace: null },
+]
+
+/* ====================================================================
+   COMPONENT RENDERERS — one for each `kind`.
+   Each is given (cfg, side, isActive, isFocused, onHover).
+   ==================================================================== */
+
+const Label = ({ x, y, name, sub, dark }) => html`
+  <g pointerEvents="none">
+    <text x=${x} y=${y} className=${`text-name ${dark ? "on-blue" : ""}`}>${name}</text>
+    <text x=${x} y=${y + 13} className=${`text-sub ${dark ? "on-blue" : ""}`}>${sub}</text>
+  </g>
+`
+
+const ChipBox = ({ cfg, side, isActive, isFocused, onHover }) => {
+  const { x, y, w, h } = cfg.pos
+  const label = cfg[side]
+  const depth = 4
+  return html`
+    <g onMouseEnter=${() => onHover(cfg.id)} onMouseLeave=${() => onHover(null)} style=${{ cursor: "pointer" }}>
+      <rect x=${x + depth} y=${y + depth} width=${w} height=${h} className="comp-shadow"/>
+      <rect x=${x} y=${y + h} width=${w} height=${depth} className="comp-side"/>
+      <rect x=${x + w} y=${y} width=${depth} height=${h} className="comp-side"/>
+      <rect x=${x} y=${y} width=${w} height=${h}
+        className=${`comp-top ${isFocused ? "focused" : isActive ? "active" : ""}`} rx="3"/>
+      <!-- IC notch -->
+      <circle cx=${x + 10} cy=${y + 10} r="2.5" fill=${isFocused ? "white" : "var(--ink-soft)"} />
+      <!-- pin grid hint -->
+      <g className="pin-grid">
+        ${Array.from({ length: Math.floor(w / 14) }, (_, i) => html`
+          <line key=${`pt-${i}`} x1=${x + 8 + i * 14} y1=${y - 2} x2=${x + 8 + i * 14} y2=${y + 2}/>
+          <line key=${`pb-${i}`} x1=${x + 8 + i * 14} y1=${y + h - 2} x2=${x + 8 + i * 14} y2=${y + h + 2}/>
+        `)}
+      </g>
+      <${Label} x=${x + 14} y=${y + 26} name=${label.name} sub=${label.sub} dark=${isFocused}/>
+    </g>
+  `
+}
+
+const ChipWide = ({ cfg, side, isActive, isFocused, onHover }) => {
+  const { x, y, w, h } = cfg.pos
+  const label = cfg[side]
+  const depth = 4
+  return html`
+    <g onMouseEnter=${() => onHover(cfg.id)} onMouseLeave=${() => onHover(null)} style=${{ cursor: "pointer" }}>
+      <rect x=${x + depth} y=${y + depth} width=${w} height=${h} className="comp-shadow"/>
+      <rect x=${x} y=${y + h} width=${w} height=${depth} className="comp-side"/>
+      <rect x=${x + w} y=${y} width=${depth} height=${h} className="comp-side"/>
+      <rect x=${x} y=${y} width=${w} height=${h}
+        className=${`comp-top ${isFocused ? "focused" : isActive ? "active" : ""}`} rx="3"/>
+      <!-- BIOS notch -->
+      <rect x=${x + 6} y=${y + 6} width="16" height="6" fill=${isFocused ? "white" : "var(--ink-soft)"} opacity="0.5"/>
+      <!-- pin grid -->
+      <g className="pin-grid">
+        ${Array.from({ length: Math.floor(w / 12) }, (_, i) => html`
+          <line key=${`pt-${i}`} x1=${x + 6 + i * 12} y1=${y - 2} x2=${x + 6 + i * 12} y2=${y + 2}/>
+          <line key=${`pb-${i}`} x1=${x + 6 + i * 12} y1=${y + h - 2} x2=${x + 6 + i * 12} y2=${y + h + 2}/>
+        `)}
+      </g>
+      <${Label} x=${x + 28} y=${y + 30} name=${label.name} sub=${label.sub} dark=${isFocused}/>
+    </g>
+  `
+}
+
+const CPUSocket = ({ cfg, side, isActive, isFocused, onHover }) => {
+  const { x, y, w, h } = cfg.pos
+  const label = cfg[side]
+  const depth = 5
+  const padX = 22, padY = 22
+  return html`
+    <g onMouseEnter=${() => onHover(cfg.id)} onMouseLeave=${() => onHover(null)} style=${{ cursor: "pointer" }}>
+      <!-- socket frame -->
+      <rect x=${x + depth} y=${y + depth} width=${w} height=${h} className="comp-shadow"/>
+      <rect x=${x} y=${y + h} width=${w} height=${depth} className="comp-side"/>
+      <rect x=${x + w} y=${y} width=${depth} height=${h} className="comp-side"/>
+      <rect x=${x} y=${y} width=${w} height=${h}
+        className=${`comp-top ${isFocused ? "focused" : ""}`} rx="2"/>
+      <!-- pin grid -->
+      <g className="pin-grid">
+        ${Array.from({ length: 12 }).flatMap((_, ix) =>
+          Array.from({ length: 8 }).map((_, iy) => html`
+            <circle key=${`p-${ix}-${iy}`}
+              cx=${x + padX + ix * (w - padX * 2) / 11}
+              cy=${y + padY + iy * (h - padY * 2) / 7}
+              r="1.2"
+              fill=${isFocused ? "rgba(255,255,255,0.55)" : "var(--ink-faint)"}/>
+          `)
+        )}
+      </g>
+      <!-- heat spreader on top -->
+      <rect x=${x + 36} y=${y + 36} width=${w - 72} height=${h - 72}
+        className=${`heat-spreader ${isActive || isFocused ? "active" : ""}`} rx="3"/>
+      <!-- chip text -->
+      <text x=${x + w / 2} y=${y + h / 2 - 4} textAnchor="middle"
+        className=${`text-name ${isFocused ? "on-blue" : ""}`}
+        style=${{ fill: isActive && !isFocused ? "var(--blue-deep)" : "" }}>
+        ${label.name}
+      </text>
+      <text x=${x + w / 2} y=${y + h / 2 + 10} textAnchor="middle"
+        className=${`text-sub ${isFocused ? "on-blue" : ""}`}>
+        ${label.sub}
+      </text>
+    </g>
+  `
+}
+
+const DimmPair = ({ cfg, side, isActive, isFocused, onHover }) => {
+  const { x, y, w, h } = cfg.pos
+  const label = cfg[side]
+  const slotH = 18
+  const gap = 6
+  const slotW = w - 24
+  const slotX = x + 12
+  return html`
+    <g onMouseEnter=${() => onHover(cfg.id)} onMouseLeave=${() => onHover(null)} style=${{ cursor: "pointer" }}>
+      ${[0, 1].map((i) => {
+        const sy = y + 14 + i * (slotH + gap)
+        return html`
+          <g key=${`dimm-${i}`}>
+            <rect x=${slotX + 3} y=${sy + 3} width=${slotW} height=${slotH} className="comp-shadow"/>
+            <rect x=${slotX} y=${sy} width=${slotW} height=${slotH} className="dimm-slot" rx="1"/>
+            <!-- memory chips visible on top of the DIMM module -->
+            ${Array.from({ length: 6 }, (_, k) => {
+              const tokenW = (slotW - 14) / 6
+              return html`
+                <rect key=${`tok-${i}-${k}`}
+                  x=${slotX + 6 + k * tokenW + 1}
+                  y=${sy + 3}
+                  width=${tokenW - 2}
+                  height=${slotH - 6}
+                  className=${`dimm-token ${(isActive || isFocused) ? "lit" : ""}`}
+                  opacity=${(isActive || isFocused) ? (0.55 + ((i + k) % 3) * 0.15) : 0.55}/>
+              `
+            })}
+            <!-- gold contact stripe along bottom edge -->
+            <line x1=${slotX + 4} y1=${sy + slotH - 1.5} x2=${slotX + slotW - 4} y2=${sy + slotH - 1.5}
+              stroke="var(--ink-soft)" strokeWidth="1"/>
+          </g>
+        `
+      })}
+      <!-- label below the two slots -->
+      <${Label} x=${slotX} y=${y + 14 + 2 * (slotH + gap) + 18} name=${label.name} sub=${label.sub} dark=${false}/>
+      <!-- slot tags on the right -->
+      <text x=${slotX + slotW + 2} y=${y + 14 + slotH - 4} className="board-label-tag" style=${{ fontSize: 7, letterSpacing: "0.1em" }}>DIMM1</text>
+      <text x=${slotX + slotW + 2} y=${y + 14 + 2 * slotH + gap - 4} className="board-label-tag" style=${{ fontSize: 7, letterSpacing: "0.1em" }}>DIMM2</text>
+    </g>
+  `
+}
+
+const PcieStack = ({ cfg, side, isActive, isFocused, onHover }) => {
+  const { x, y, w, h } = cfg.pos
+  const label = cfg[side]
+  const slots = [
+    { w: 70,  label: "x1"  },
+    { w: 110, label: "x4"  },
+    { w: 130, label: "x16" },
+  ]
+  return html`
+    <g onMouseEnter=${() => onHover(cfg.id)} onMouseLeave=${() => onHover(null)} style=${{ cursor: "pointer" }}>
+      ${slots.map((s, i) => {
+        const sy = y + i * 35
+        return html`
+          <g key=${`pcie-${i}`}>
+            <rect x=${x + 3} y=${sy + 3} width=${s.w} height="22" className="comp-shadow"/>
+            <rect x=${x} y=${sy} width=${s.w} height="22"
+              className=${`pcie-slot ${(isActive || isFocused) ? "active" : ""}`} rx="2"/>
+            <!-- card stub coming out of slot -->
+            <rect x=${x + 4} y=${sy - 6} width=${s.w - 8} height="6"
+              fill="var(--paper-deep)" stroke="var(--ink-soft)" strokeWidth="0.6"/>
+            <text x=${x + 6} y=${sy + 15} className="text-sub" fill="white">${s.label}</text>
+          </g>
+        `
+      })}
+      <${Label} x=${x} y=${y + h - 14} name=${label.name} sub=${label.sub} dark=${false}/>
+    </g>
+  `
+}
+
+const SataRow = ({ cfg, side, isActive, isFocused, onHover }) => {
+  const { x, y, w, h } = cfg.pos
+  const label = cfg[side]
+  return html`
+    <g onMouseEnter=${() => onHover(cfg.id)} onMouseLeave=${() => onHover(null)} style=${{ cursor: "pointer" }}>
+      ${[0, 1, 2, 3].map((i) => {
+        const px = x + 6 + i * 32
+        return html`
+          <g key=${`sata-${i}`}>
+            <rect x=${px + 2} y=${y + 2} width="26" height="22" className="comp-shadow"/>
+            <rect x=${px} y=${y} width="26" height="22"
+              className=${`sata-port ${(isActive || isFocused) ? "active" : ""}`} rx="1"/>
+            <line x1=${px + 4} y1=${y + 6} x2=${px + 22} y2=${y + 6}
+              stroke="var(--ink-soft)" strokeWidth="0.6"/>
+            <line x1=${px + 4} y1=${y + 12} x2=${px + 22} y2=${y + 12}
+              stroke="var(--ink-soft)" strokeWidth="0.6"/>
+            <line x1=${px + 4} y1=${y + 18} x2=${px + 22} y2=${y + 18}
+              stroke="var(--ink-soft)" strokeWidth="0.6"/>
+          </g>
+        `
+      })}
+      <!-- label sits BELOW the SATA ports (right side overlaps with caps; above runs into traces) -->
+      <${Label} x=${x + 4} y=${y + 38} name=${label.name} sub=${label.sub} dark=${false}/>
+    </g>
+  `
+}
+
+const Caps = ({ cfg }) => {
+  const { x, y } = cfg.pos
+  return html`
+    <g pointerEvents="none">
+      ${Array.from({ length: 9 }, (_, i) => {
+        const cx = x + 14 + (i % 5) * 22
+        const cy = y + 8 + Math.floor(i / 5) * 26
+        return html`
+          <g key=${`cap-${i}`}>
+            <circle cx=${cx + 2} cy=${cy + 2} r="9" className="comp-shadow"/>
+            <circle cx=${cx} cy=${cy} r="9" className="cap-body"/>
+            <line x1=${cx - 6} y1=${cy} x2=${cx + 6} y2=${cy} className="cap-band"/>
+            <circle cx=${cx} cy=${cy} r="2.5" fill="var(--ink-soft)"/>
+          </g>
+        `
+      })}
+    </g>
+  `
+}
+
+const AtxPwr = ({ cfg }) => {
+  const { x, y, w, h } = cfg.pos
+  return html`
+    <g pointerEvents="none">
+      <rect x=${x + 3} y=${y + 3} width=${w} height=${h} className="comp-shadow"/>
+      <rect x=${x} y=${y} width=${w} height=${h} fill="var(--paper-deep)" stroke="var(--ink)" strokeWidth="1"/>
+      ${Array.from({ length: 12 }, (_, i) => html`
+        <rect key=${`pin-${i}`}
+          x=${x + 4 + (i % 6) * (w - 8) / 6}
+          y=${y + 6 + Math.floor(i / 6) * (h - 16) / 2}
+          width="6" height="10" fill="var(--ink-soft)"/>
+      `)}
+      <text x=${x + 6} y=${y - 4} className="board-label-tag">ATX PWR</text>
+    </g>
+  `
+}
+
+const MountHole = ({ cfg }) => {
+  const { x, y } = cfg.pos
+  return html`<circle cx=${x + 6} cy=${y + 6} r="6" className="mount-hole" pointerEvents="none"/>`
+}
+
+const KIND_MAP = {
+  "chip-small": ChipBox,
+  "chip-wide":  ChipWide,
+  "cpu-socket": CPUSocket,
+  "dimm-pair":  DimmPair,
+  "pcie-stack": PcieStack,
+  "sata-row":   SataRow,
+}
+
+const DECOR_MAP = {
+  "atx-pwr": AtxPwr,
+  "caps":    Caps,
+  "mount":   MountHole,
+}
+
+/* ====================================================================
+   ONE BOARD — renders the PCB outline + all components + traces.
+   ==================================================================== */
+
+const Board = ({ side, activeIds, focusedId, activeTrace, onHover, sideLabel, era, replayKey }) => {
+  // PCB outline
+  const W = 740, H = 540
+  const pcbPath = `
+    M 18 0 L ${W - 18} 0 L ${W} 18 L ${W} ${H - 18}
+    L ${W - 18} ${H} L 18 ${H} L 0 ${H - 18} L 0 18 Z
+  `
+  return html`
+    <g>
+      <!-- PCB outline + drop shadow -->
+      <path d=${pcbPath} transform="translate(6, 6)" className="comp-shadow"/>
+      <path d=${pcbPath} className="pcb-fill"/>
+
+      <!-- Era / side tag in corner -->
+      <text x="20" y="${H - 14}" className="board-label-tag">${era}</text>
+      <text x="${W - 20}" y="${H - 14}" textAnchor="end" className="board-label-tag" style=${{ fontWeight: 700, fill: "var(--ink)" }}>${sideLabel}</text>
+
+      <!-- PCB traces (idle baseline) -->
+      ${TRACES.map((t) => html`
+        <path key=${`trace-base-${t.id}`} d=${t.d} className="pcb-rail"/>
+      `)}
+      <!-- PCB trace (animated hot pulse) -->
+      ${activeTrace && html`
+        <${motion.path}
+          key=${`hot-${replayKey}-${side}-${activeTrace}`}
+          d=${TRACES.find(t => t.id === activeTrace)?.d}
+          className="pcb-rail-hot"
+          initial=${{ pathLength: 0, opacity: 0.4 }}
+          animate=${{ pathLength: 1, opacity: 1 }}
+          transition=${{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+        />
+      `}
+
+      <!-- Decorative bits (capacitors, ATX power, mount holes) -->
+      ${DECOR.map((d, i) => {
+        const C = DECOR_MAP[d.kind]
+        return html`<${C} key=${`decor-${i}`} cfg=${d}/>`
+      })}
+
+      <!-- Real components -->
+      ${COMPONENTS.map((cfg) => {
+        const Cmp = KIND_MAP[cfg.kind]
+        const isActive = activeIds.includes(cfg.id)
+        const isFocused = focusedId === cfg.id
+        return html`
+          <${Cmp} key=${`c-${cfg.id}`} cfg=${cfg} side=${side}
+            isActive=${isActive} isFocused=${isFocused} onHover=${onHover}/>
+        `
+      })}
+    </g>
+  `
+}
+
+/* ====================================================================
+   GUTTER ARROWS — six curves linking left-component to right-component.
+   ==================================================================== */
+
+const GUTTER_X = 740 + 80   // right edge of left board + half gutter
+const RIGHT_X  = 740 + 160  // left edge of right board
+
+// Y-anchors are offset so the six arrows don't overlap in the cpu/ram/drivers band.
+// Positive bend curves DOWNWARD, negative curves UPWARD.
+const COMPONENT_GUTTER_Y = {
+  app:     78,
+  os:      165,
+  ram:     272,    // sits above CPU
+  cpu:     320,    // CPU socket centre
+  drivers: 360,    // sits below CPU
+  disk:    445,
+}
+
+const GUTTER_BEND = {
+  app:     -10,    // gentle upward bow
+  os:      -8,
+  ram:     -16,    // bow up (away from cpu line)
+  cpu:     0,      // straight horizontal — the "central" mapping
+  drivers: 16,     // bow down (away from cpu line)
+  disk:    -8,
+}
+
+const ARROW_LABEL = {
+  app:     "programma",
+  os:      "planner",
+  cpu:     "rekenen",
+  ram:     "werkgeheugen",
+  drivers: "IO-bemiddeling",
+  disk:    "persistente opslag",
+}
+
+const GutterArrows = ({ activeIds, focusedId }) => {
+  const cx = GUTTER_X
+  const leftAnchor = (id) => ({ x: 740 - 8, y: COMPONENT_GUTTER_Y[id] })
+  const rightAnchor = (id) => ({ x: RIGHT_X + 8, y: COMPONENT_GUTTER_Y[id] })
+
+  return html`
+    <g>
+      ${Object.keys(COMPONENT_GUTTER_Y).map((id) => {
+        const a = leftAnchor(id), b = rightAnchor(id)
+        const my = (a.y + b.y) / 2
+        const bend = GUTTER_BEND[id]
+        const controlY = my + bend
+        const d = `M ${a.x} ${a.y} Q ${cx} ${controlY} ${b.x} ${b.y}`
+        const isActive = activeIds.includes(id) || focusedId === id
+        // Label sits at the apex of the curve (slightly offset for readability)
+        const labelY = controlY + (bend <= 0 ? -6 : 14)
+        return html`
+          <${React.Fragment} key=${`ga-${id}`}>
+            <path d=${d} className=${`gutter-arrow ${isActive ? "active" : ""}`}/>
+            <polygon
+              points="${b.x},${b.y} ${b.x - 6},${b.y - 4} ${b.x - 6},${b.y + 4}"
+              fill=${isActive ? "var(--blue)" : "var(--ink-faint)"}/>
+            <polygon
+              points="${a.x},${a.y} ${a.x + 6},${a.y - 4} ${a.x + 6},${a.y + 4}"
+              fill=${isActive ? "var(--blue)" : "var(--ink-faint)"}/>
+            <text x=${cx} y=${labelY} textAnchor="middle"
+              className=${`gutter-arrow-label ${isActive ? "active" : ""}`}>
+              ${ARROW_LABEL[id]}
+            </text>
+          </${React.Fragment}>
+        `
+      })}
+    </g>
+  `
+}
+
+/* ====================================================================
+   DETAIL PANEL — shown under the boards when a component is hovered.
+   ==================================================================== */
+
+const DetailPanel = ({ focusedId }) => {
+  if (!focusedId) {
+    return html`
+      <div className="detail-panel empty">
+        <div>
+          <div className="detail-head">Wijs een component aan</div>
+          <div className="detail-title" style=${{ color: "var(--ink-faint)" }}>
+            Functie-mapping verschijnt hier.
+          </div>
+          <div className="detail-quote">
+            Wijs een component op een van de borden aan om de trace te pauzeren en
+            de mapping op functie-niveau tussen de twee architecturen te onthullen.
+          </div>
+        </div>
+        <div></div><div></div>
+      </div>
+    `
+  }
+  const c = COMPONENTS.find(c => c.id === focusedId)
+  if (!c) return null
+  return html`
+    <div className="detail-panel">
+      <div>
+        <div className="detail-head">Componentenpaar</div>
+        <div className="detail-title">${c.detail.title}</div>
+        <div className="detail-quote">${c.detail.quote}</div>
+      </div>
+      <div className="detail-col">
+        <h4>Klassiek · ${c.classic.name}</h4>
+        <ul>
+          ${c.detail.classic.map((line, i) => html`<li key=${`lc-${i}`}>${line}</li>`)}
+        </ul>
+      </div>
+      <div className="detail-col">
+        <h4>Agentic · ${c.agentic.name}</h4>
+        <ul>
+          ${c.detail.agentic.map((line, i) => html`<li key=${`la-${i}`}>${line}</li>`)}
+        </ul>
+      </div>
+    </div>
+  `
+}
+
+/* ====================================================================
+   TAKEAWAYS — four conclusion cells matching the inspiration footer.
+   ==================================================================== */
+
+const TAKEAWAYS = [
+  {
+    marker: "blue",
+    head: "Mapping",
+    text: html`<strong>Eén-op-één, geen metafoor.</strong> Geheugenbeheer, planning, IO, isolatie, exception-afhandeling — dezelfde vijf problemen, opgelost op dezelfde plek.`,
+    cite: "agent-harness.md · §OS-analogie",
+  },
+  {
+    marker: "blue",
+    head: "Inversie",
+    text: html`<strong>Het model is de CPU, niet het systeem.</strong> Een CPU doet niets zonder OS. Een LLM doet niets in productie zonder harness.`,
+    cite: "agent-harness.md · §OS-analogie",
+  },
+  {
+    marker: "orange",
+    head: "Economie",
+    text: html`<strong>De CPU is gehuurd; het OS is van jou.</strong> Plan voor wisselen, niet voor trouwen — en doe het opbouwende werk op de laag waar het substraat niet veroudert.`,
+    cite: "agent-harness.md · §Model is gehuurd",
+  },
+  {
+    marker: "grounded",
+    head: "Trajectorie",
+    text: html`<strong>Benchmark-plafonds zijn geen plafond.</strong> Modelresultaten plateauen; productie-agents blijven verbeteren — omdat het OS-werk het zware tilwerk doet.`,
+    cite: "agent-harness.md · §Empirische verankering",
+  },
+]
+
+const Takeaways = ({ replayKey }) => html`
+  <div className="takeaways">
+    ${TAKEAWAYS.map((t, i) => html`
+      <${motion.div}
+        key=${`tk-${replayKey}-${i}`}
+        className="takeaway-cell"
+        initial=${{ opacity: 0, y: 6 }}
+        animate=${{ opacity: 1, y: 0 }}
+        transition=${{ delay: 1.6 + i * 0.12, duration: 0.35, ease: "easeOut" }}
+      >
+        <div className=${`takeaway-marker ${t.marker}`}></div>
+        <div className="takeaway-head">${t.head}</div>
+        <div className="takeaway-text">${t.text}</div>
+        <div className="takeaway-cite">${t.cite}</div>
+      </${motion.div}>
+    `)}
+  </div>
+`
+
+/* ====================================================================
+   FOOTER AXIS — timeline of operating systems & agent harnesses.
+   ==================================================================== */
+
+const AXIS_POINTS = [
+  { label: "Multics",       year: "1969", side: "then" },
+  { label: "Unix",          year: "1971", side: "then" },
+  { label: "Linux",         year: "1991", side: "then" },
+  { label: "macOS / NT",    year: "2001", side: "then" },
+  { label: "Claude Code",   year: "2025", side: "now"  },
+  { label: "Codex / Cursor",year: "2026", side: "now"  },
+]
+
+const FooterAxis = () => html`
+  <footer className="axis">
+    <div className="axis-label">← 1969 · Besturingssystemen</div>
+    <div className="axis-dots">
+      ${AXIS_POINTS.map((p, i) => html`
+        <div key=${`ad-${i}`} className="axis-dot">
+          <div className=${`axis-dot-mark ${p.side}`}></div>
+          <div className="axis-dot-label">${p.label}</div>
+          <div className="axis-dot-label" style=${{ color: "var(--ink-soft)" }}>${p.year}</div>
+        </div>
+      `)}
+    </div>
+    <div className="axis-label right">2026+ · Agent Harnesses →</div>
+  </footer>
+`
+
+/* ====================================================================
+   ROOT APP
+   ==================================================================== */
+
+const STEP_INTERVAL_MS = 1100
+
+const App = () => {
+  const [stepIdx, setStepIdx] = useState(0)
+  const [focusedId, setFocusedId] = useState(null)
+  const [paused, setPaused] = useState(false)
+  const [replayKey, setReplayKey] = useState(0)
+
+  // tick driver
+  useEffect(() => {
+    if (paused || focusedId) return
+    const t = setInterval(() => {
+      setStepIdx((i) => (i + 1) % TRACE_SEQ.length)
+    }, STEP_INTERVAL_MS)
+    return () => clearInterval(t)
+  }, [paused, focusedId])
+
+  const step = TRACE_SEQ[stepIdx]
+  const activeIds = useMemo(() => step.active.split("+"), [step.active])
+  const activeTrace = step.trace
+
+  const onHover = (id) => setFocusedId(id)
+
+  const handleReplay = () => {
+    setStepIdx(0)
+    setFocusedId(null)
+    setReplayKey(k => k + 1)
+  }
+
+  // Bij focus: toon het gefocuste paar; anders een afgeleide stapomschrijving.
+  const stepDescription = useMemo(() => {
+    if (focusedId) {
+      const c = COMPONENTS.find(c => c.id === focusedId)
+      if (c) return `Gepauzeerd op ${c.classic.name} ↔ ${c.agentic.name}`
+    }
+    return `Stap ${stepIdx + 1} van ${TRACE_SEQ.length} · actief: ${step.active}`
+  }, [stepIdx, step, focusedId])
+
+  return html`
+    <div className="page">
+      <header className="main">
+        <div>
+          <div className="bulletin">Interactieve vergelijking · Klassieke vs Agentic architectuur · Mei 2026</div>
+          <div className="byline">Door Witek ten Hove · <a href="mailto:witek@businessdatasolutions.nl">witek@businessdatasolutions.nl</a></div>
+          <h1 className="title">
+            Dezelfde problemen,<br/>
+            dezelfde architectuur.
+          </h1>
+        </div>
+        <div className="manifesto">
+          <div className="manifesto-label">Uit de wiki · agent-harness.md</div>
+          <div className="manifesto-text">
+            <span className="quote-mark">„</span>De ruwe LLM is de <strong>CPU</strong> — krachtig maar inert. Geen geheugen, geen opslag, geen IO. Je context window gedraagt zich als <strong>RAM</strong> — snel maar beperkt. Externe databases dienen als <strong>schijf</strong>. Tool-integraties zijn <strong>apparaatdrivers</strong>. En de <strong>harness</strong> is het <strong>besturingssysteem</strong>, dat bepaalt wat de CPU ziet en wanneer.<span className="quote-mark">”</span>
+          </div>
+          <div className="manifesto-source">§ De besturingssysteem-analogie</div>
+          <div className="manifesto-controls">
+            <button className="nav-btn" onClick=${() => setPaused(p => !p)}>
+              ${paused ? "▶ Speel" : "❚❚ Pauze"}
+            </button>
+            <button className="nav-btn replay" onClick=${handleReplay}>⟳ Opnieuw</button>
+          </div>
+        </div>
+      </header>
+
+      <div className="legend-row">
+        <div className="legend-side">
+          <div className="legend-num">01</div>
+          <div className="legend-name">Klassieke computer</div>
+          <div className="legend-sub">1969 · Hardware · Siliciumsubstraat</div>
+          <div className="legend-rule"></div>
+        </div>
+        <div className="legend-side right">
+          <div className="legend-num">02</div>
+          <div className="legend-name">Agent Harness</div>
+          <div className="legend-sub">2026 · Software · Taalsubstraat</div>
+          <div className="legend-rule"></div>
+        </div>
+      </div>
+
+      <div className="stage">
+        <svg className="boards" viewBox="0 0 1640 560" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <filter id="hot-glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="1.6"/>
+              <feMerge>
+                <feMergeNode/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+
+          <!-- linker bord -->
+          <g transform="translate(0, 10)">
+            <${Board}
+              side="classic"
+              activeIds=${activeIds}
+              focusedId=${focusedId}
+              activeTrace=${activeTrace}
+              onHover=${onHover}
+              sideLabel="KLASSIEK"
+              era="ATX REFERENTIE-BOARD · v1.7"
+              replayKey=${replayKey}
+            />
+          </g>
+
+          <!-- gutter-pijlen in het midden -->
+          <g transform="translate(0, 10)">
+            <${GutterArrows} activeIds=${activeIds} focusedId=${focusedId}/>
+          </g>
+
+          <!-- rechter bord -->
+          <g transform="translate(900, 10)">
+            <${Board}
+              side="agentic"
+              activeIds=${activeIds}
+              focusedId=${focusedId}
+              activeTrace=${activeTrace}
+              onHover=${onHover}
+              sideLabel="AGENTIC"
+              era="HARNESS REFERENTIE-BOARD · v0.1"
+              replayKey=${replayKey}
+            />
+          </g>
+        </svg>
+        <div className="step-label">
+          <span className="step-word">${stepDescription}</span>
+        </div>
+      </div>
+
+      <${DetailPanel} focusedId=${focusedId}/>
+
+      <${Takeaways} replayKey=${replayKey}/>
+
+      <${FooterAxis}/>
+    </div>
+  `
+}
+
+createRoot(document.getElementById("root")).render(html`<${App} />`)
+</script>
+</body>
+</html>

@@ -34,10 +34,55 @@
   }
 
   .page {
-    max-width: 800px;
+    max-width: 860px;
     width: 100%;
     padding: 48px 32px;
   }
+
+  .viz-section { margin: 40px 0 0 0; }
+  .viz-header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: baseline;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .viz-num {
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: 36px;
+    line-height: 1;
+    color: var(--orange);
+    letter-spacing: -0.04em;
+  }
+  .viz-headline {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .viz-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .viz-name {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .viz-lede {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink);
+    margin: 12px 0 18px;
+  }
+  .viz-lede em { font-style: italic; color: var(--ink-soft); }
 
   .bulletin {
     font-family: 'JetBrains Mono', monospace;
@@ -198,7 +243,7 @@
 </head>
 <body>
 <div class="page">
-  <div class="bulletin">Interactive comparison · LLM context architectures · May 2026</div>
+  <div class="bulletin">Brutalist visualisations · LLM architecture · May 2026</div>
 
   <h1>
     Architecture<br/>
@@ -206,26 +251,71 @@
   </h1>
 
   <p class="lede">
-    A brutalist visualisation comparing four ways to ground an LLM in real knowledge —
-    <em>Context Window</em>, <em>RAG</em>, <em>Knowledge Graph</em>, and <em>LLM Wiki</em> —
-    each running the same three sample queries. Watch where each one succeeds, partially answers,
-    or breaks down completely.
+    A small collection of brutalist visualisations about how language-model systems are actually
+    architected — the substrates they read, the harnesses that orchestrate them, and the
+    structural analogies to the computing patterns we already know.
   </p>
 
-  <div class="lang-row">
-    <a class="lang-card" href="architecture-of-scale-en.html">
-      <div class="lang-label">EN · English</div>
-      <div class="lang-title">Four ways to answer one question.</div>
-      <div class="arrow">→</div>
-      <div class="lang-meta">Open the English version</div>
-    </a>
-    <a class="lang-card" href="architecture-of-scale-nl.html">
-      <div class="lang-label">NL · Nederlands</div>
-      <div class="lang-title">Vier manieren om één vraag te beantwoorden.</div>
-      <div class="arrow">→</div>
-      <div class="lang-meta">Open de Nederlandse versie</div>
-    </a>
-  </div>
+  <section class="viz-section">
+    <div class="viz-header">
+      <div class="viz-num">01</div>
+      <div class="viz-headline">
+        <div class="viz-eyebrow">Four context architectures · one question</div>
+        <div class="viz-name">Four ways to answer one question.</div>
+      </div>
+    </div>
+    <p class="viz-lede">
+      A four-column comparison of <em>Context Window</em>, <em>RAG</em>, <em>Knowledge Graph</em>,
+      and <em>LLM Wiki</em>, each running the same three sample queries. Watch where each one
+      succeeds, partially answers, or breaks down — and how the upfront-work investment shifts the
+      shape of the answer.
+    </p>
+    <div class="lang-row">
+      <a class="lang-card" href="architecture-of-scale-en.html">
+        <div class="lang-label">EN · English</div>
+        <div class="lang-title">Four ways to answer one question.</div>
+        <div class="arrow">→</div>
+        <div class="lang-meta">Open the English version</div>
+      </a>
+      <a class="lang-card" href="architecture-of-scale-nl.html">
+        <div class="lang-label">NL · Nederlands</div>
+        <div class="lang-title">Vier manieren om één vraag te beantwoorden.</div>
+        <div class="arrow">→</div>
+        <div class="lang-meta">Open de Nederlandse versie</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="viz-section">
+    <div class="viz-header">
+      <div class="viz-num">02</div>
+      <div class="viz-headline">
+        <div class="viz-eyebrow">The OS analogy · one-to-one mapping</div>
+        <div class="viz-name">Same problems, same architecture.</div>
+      </div>
+    </div>
+    <p class="viz-lede">
+      Two isometric motherboards side by side — the classical PC stack and the agent-harness stack —
+      with synchronised pulses travelling along their PCB traces. Hover any component to reveal the
+      function-level mapping: <em>memory management</em> ↔ <em>context management</em>,
+      <em>scheduling</em> ↔ <em>agentic-loop control</em>, and so on. The harness <em>is</em> the
+      operating system; the LLM <em>is</em> the CPU.
+    </p>
+    <div class="lang-row">
+      <a class="lang-card" href="harness-is-os-en.html">
+        <div class="lang-label">EN · English</div>
+        <div class="lang-title">Same problems, same architecture.</div>
+        <div class="arrow">→</div>
+        <div class="lang-meta">Open the English version</div>
+      </a>
+      <a class="lang-card" href="harness-is-os-nl.html">
+        <div class="lang-label">NL · Nederlands</div>
+        <div class="lang-title">Dezelfde problemen, dezelfde architectuur.</div>
+        <div class="arrow">→</div>
+        <div class="lang-meta">Open de Nederlandse versie</div>
+      </a>
+    </div>
+  </section>
 
   <hr class="rule" />
 
@@ -233,9 +323,9 @@
     <div>
       <h3>What's inside</h3>
       <ul>
-        <li>Three sample queries — common knowledge, proprietary &amp; recent, multi-hop relational</li>
-        <li>Four architectures × four animations × three outcomes (Grounded / Partial / Ungrounded)</li>
-        <li>An investment axis from <em>zero prep</em> to <em>continuous prep</em></li>
+        <li>Two interactive visualisations — context architectures and the OS/harness analogy</li>
+        <li>EN + NL versions of each, identical in structure</li>
+        <li>Deterministic visual indicators: <em>Grounded / Partial / Ungrounded</em> · animated PCB traces · synchronised pulses</li>
       </ul>
     </div>
     <div>
