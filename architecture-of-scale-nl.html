@@ -68,8 +68,23 @@
     letter-spacing: 0.22em;
     color: var(--ink-soft);
     text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .byline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
     margin-bottom: 14px;
   }
+  .byline a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    transition: color 0.15s;
+  }
+  .byline a:hover { color: var(--ink); }
   h1.title {
     font-family: 'Inter', sans-serif;
     font-weight: 900;
@@ -999,6 +1014,7 @@ const App = () => {
       <header className="main">
         <div>
           <div className="bulletin">Bulletin #01 · Contextarchitecturen · Een vergelijking</div>
+          <div className="byline">Door Witek ten Hove · <a href="mailto:witek@businessdatasolutions.nl">witek@businessdatasolutions.nl</a></div>
           <h1 className="title">
             Vier manieren<br/>
             om <span className="accent">één</span> vraag te beantwoorden.
