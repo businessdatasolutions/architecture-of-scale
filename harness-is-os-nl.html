@@ -249,6 +249,68 @@
   }
   .gutter-arrow-label.active { opacity: 1; fill: var(--blue-deep); font-weight: 600; }
 
+  /* Operatie-strookjes — live worked-example, één per bord */
+  .op-strips {
+    display: grid;
+    grid-template-columns: 740fr 160fr 740fr;  /* matcht SVG viewBox proporties */
+    gap: 0;
+    margin-top: 8px;
+    align-items: stretch;
+  }
+  .op-strip {
+    background: var(--paper-soft);
+    border: 1px solid var(--rule);
+    padding: 10px 14px;
+    min-height: 58px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  .op-strip-left  { grid-column: 1; }
+  .op-strip-right { grid-column: 3; }
+  .op-strip-head {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .op-strip-body {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  .op-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 4px 7px;
+    color: var(--paper);
+    background: var(--ink);
+    align-self: start;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .op-badge.cpu     { background: var(--blue); }
+  .op-badge.mem     { background: var(--ink); }
+  .op-badge.sched   { background: var(--ink-soft); }
+  .op-badge.io      { background: var(--orange); }
+  .op-badge.disk    { background: var(--grounded); }
+  .op-badge.bound   { background: var(--ink); }
+  .op-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    color: var(--ink);
+    margin: 0;
+  }
+  .op-code .dim { color: var(--ink-soft); }
+
   .step-label {
     text-align: center;
     margin-top: 6px;
@@ -570,6 +632,59 @@ const TRACE_SEQ = [
   { active: "drivers",         trace: null },
   { active: "os",              trace: null },
   { active: "app",             trace: null },
+]
+
+/* ====================================================================
+   EXAMPLE_STEPS — een doorgewerkt voorbeeld door de 14 stappen heen.
+   Beide kanten rekenen HETZELFDE uit: ROE = netto resultaat / eigen vermogen
+   voor Q3 2026. ROE ≈ 0,184 (€4,2M / €22,8M ≈ 18,4%).
+   ASM/SQL/JSON blijft taal-onafhankelijk; alleen de prompt-regels (stap 0
+   en 13) zijn vertaald.
+   ==================================================================== */
+
+const EXAMPLE_STEPS = [
+  // 0: app — start / prompt
+  { classical: { badge: "EXEC",      cls: "bound", code: "$ roe_calc Q3-2026" },
+    agentic:   { badge: "PROMPT",    cls: "bound", code: 'gebruiker: "Bereken ROE voor Q3 2026"' } },
+  // 1: app -> os — syscall / intake
+  { classical: { badge: "SYSCALL",   cls: "bound", code: "int 0x80   ; sys_enter" },
+    agentic:   { badge: "INTAKE",    cls: "bound", code: "harness.receive(prompt)" } },
+  // 2: os — schedule / plan
+  { classical: { badge: "SCHED",     cls: "sched", code: "fork(); alloc 8 pages" },
+    agentic:   { badge: "PLAN",      cls: "sched", code: "harness.plan(): tools=[query_db]" } },
+  // 3: os -> cpu — dispatch
+  { classical: { badge: "DISPATCH",  cls: "sched", code: "ctx_switch; load IP=0x4000" },
+    agentic:   { badge: "DISPATCH",  cls: "sched", code: "claude.invoke(tools=[query_db])" } },
+  // 4: cpu — execute / emit
+  { classical: { badge: "DECODE",    cls: "cpu",   code: "DIV  r1, r3, r2" },
+    agentic:   { badge: "EMIT",      cls: "cpu",   code: 'tool_use {name:"query_db",' } },
+  // 5: cpu -> ram — fetch operand / read context
+  { classical: { badge: "MEM-FETCH", cls: "mem",   code: "MOV  r2, [0x4108]  ; equity" },
+    agentic:   { badge: "CTX-READ",  cls: "mem",   code: "assemble(sys + turns + tools)" } },
+  // 6: ram — operand resident / context populated
+  { classical: { badge: "MEM-HIT",   cls: "mem",   code: "r2 = 22_800_000  (page 0x40)" },
+    agentic:   { badge: "CTX-HIT",   cls: "mem",   code: "12.408 tokens geladen" } },
+  // 7: os -> drivers — IO request / tool use
+  { classical: { badge: "IO-REQ",    cls: "io",    code: "sys_read(fd=3, buf, 4096)" },
+    agentic:   { badge: "TOOL-USE",  cls: "io",    code: "→ mcp.query_database()" } },
+  // 8: drivers — protocol
+  { classical: { badge: "NVME",      cls: "io",    code: "READ LBA=0xA1BC count=8" },
+    agentic:   { badge: "MCP",       cls: "io",    code: 'db.execute("SELECT ...")' } },
+  // 9: drivers -> disk — issue
+  { classical: { badge: "BLK-IO",    cls: "disk",  code: "block layer → device" },
+    agentic:   { badge: "QUERY",     cls: "disk",  code: "psql: scan boeken.q3_2026" } },
+  // 10: disk — return
+  { classical: { badge: "READ",      cls: "disk",  code: "buf = {ni:4_200_000, eq:22.8M}" },
+    agentic:   { badge: "ROWS",      cls: "disk",  code: '{"net_income":4200000,"equity":22800000}' } },
+  // 11: drivers — deliver up
+  { classical: { badge: "IRQ",       cls: "io",    code: "interrupt; lever buffer af" },
+    agentic:   { badge: "RESULT",    cls: "io",    code: "tool_result → harness" } },
+  // 12: os — wake / append
+  { classical: { badge: "WAKE",      cls: "sched", code: "wake_process(pid=1742)" },
+    agentic:   { badge: "APPEND",    cls: "sched", code: "ctx.append(tool_result)" } },
+  // 13: app — present
+  { classical: { badge: "OUTPUT",    cls: "cpu",   code: 'printf("ROE=%.3f", r1) → 0,184' },
+    agentic:   { badge: "ANSWER",    cls: "cpu",   code: 'claude: "ROE = 18,4%"' } },
 ]
 
 /* ====================================================================
@@ -1009,6 +1124,39 @@ const DetailPanel = ({ focusedId }) => {
 }
 
 /* ====================================================================
+   OP-STRIPS — gesynchroniseerde worked-example strookjes onder elk bord.
+   Leest EXAMPLE_STEPS[stepIdx] en rendert één strookje per kant.
+   ==================================================================== */
+
+const OpStrips = ({ stepIdx, replayKey, heads }) => {
+  const ex = EXAMPLE_STEPS[stepIdx] || EXAMPLE_STEPS[0]
+  const cell = (side, head) => html`
+    <${motion.div}
+      key=${`opcell-${replayKey}-${stepIdx}-${side}`}
+      className=${`op-strip op-strip-${side === "classical" ? "left" : "right"}`}
+      initial=${{ opacity: 0, y: 4 }}
+      animate=${{ opacity: 1, y: 0 }}
+      transition=${{ duration: 0.28, ease: "easeOut" }}
+    >
+      <div>
+        <div className="op-strip-head">${head}</div>
+        <div className="op-strip-body">
+          <span className=${`op-badge ${ex[side].cls}`}>${ex[side].badge}</span>
+          <pre className="op-code">${ex[side].code}</pre>
+        </div>
+      </div>
+    </${motion.div}>
+  `
+  return html`
+    <div className="op-strips">
+      ${cell("classical", heads.classical)}
+      <div></div>
+      ${cell("agentic",   heads.agentic)}
+    </div>
+  `
+}
+
+/* ====================================================================
    TAKEAWAYS — four conclusion cells matching the inspiration footer.
    ==================================================================== */
 
@@ -1120,13 +1268,13 @@ const App = () => {
     setReplayKey(k => k + 1)
   }
 
-  // Bij focus: toon het gefocuste paar; anders een afgeleide stapomschrijving.
+  // Compacte stap-indicator: toont de worked-example voortgang, niet de abstracte trace-state.
   const stepDescription = useMemo(() => {
     if (focusedId) {
       const c = COMPONENTS.find(c => c.id === focusedId)
-      if (c) return `Gepauzeerd op ${c.classic.name} ↔ ${c.agentic.name}`
+      if (c) return `Gepauzeerd · ${c.classic.name} ↔ ${c.agentic.name}`
     }
-    return `Stap ${stepIdx + 1} van ${TRACE_SEQ.length} · actief: ${step.active}`
+    return `Stap ${stepIdx + 1} / ${TRACE_SEQ.length} · ${step.active.replace("+", " → ")}`
   }, [stepIdx, step, focusedId])
 
   return html`
@@ -1215,6 +1363,11 @@ const App = () => {
             />
           </g>
         </svg>
+        <${OpStrips}
+          stepIdx=${stepIdx}
+          replayKey=${replayKey}
+          heads=${{ classical: "Operatie-log · klassiek", agentic: "Operatie-log · agentic" }}
+        />
         <div className="step-label">
           <span className="step-word">${stepDescription}</span>
         </div>
