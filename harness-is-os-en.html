@@ -494,7 +494,38 @@
       transition-duration: 0.01ms !important;
     }
   }
-  @media (max-width: 1280px) { body { overflow-x: auto; } }
+  @media (max-width: 1280px) {
+    .page { min-width: 0; padding: 24px 24px 20px; }
+    header.main { grid-template-columns: 1fr; gap: 18px; align-items: start; }
+    h1.title { font-size: 48px; }
+    .legend-row { gap: 40px; }
+    .takeaways { gap: 16px; }
+  }
+  @media (max-width: 900px) {
+    .page { padding: 20px 18px; gap: 18px; }
+    h1.title { font-size: 40px; }
+    .legend-row { grid-template-columns: 1fr; gap: 18px; }
+    .legend-side.right { text-align: left; align-items: flex-start; }
+    .op-strips { grid-template-columns: 1fr; gap: 8px; }
+    .op-strip-left, .op-strip-right { grid-column: 1; }
+    .detail-panel { grid-template-columns: 1fr; gap: 14px; min-height: 0; }
+    .takeaways { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .page { padding: 16px 14px; gap: 14px; }
+    h1.title { font-size: 32px; line-height: 0.95; }
+    .legend-num { font-size: 36px; }
+    .legend-name { font-size: 15px; }
+    .takeaways { grid-template-columns: 1fr; gap: 16px; }
+    footer.axis { grid-template-columns: 1fr; gap: 10px; }
+    .axis-label.right { text-align: left; }
+    .axis-dots { flex-wrap: wrap; gap: 14px; justify-content: flex-start; }
+    .query-row { flex-wrap: wrap; gap: 10px; }
+    .query-nav { width: 100%; justify-content: flex-end; }
+    .nav-btn { padding: 5px 10px; font-size: 10px; }
+    .op-strip { padding: 8px 10px; }
+    .op-code { font-size: 10px; }
+  }
 </style>
 <script type="importmap">
 {
